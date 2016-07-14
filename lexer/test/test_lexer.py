@@ -19,12 +19,12 @@ def test_find_boolean_false(p):
 def test_find_string(p):
     p.find_string("'i am a string'")
     assert len(p.children) == 1
-    assert type(p.children[0]) == type(StringNode(""))
+    assert isinstance(p.children[0], StringNode)
     assert p.children[0].children[0].value == "i"
 
 def test_find_string_escaped(p):
     p.find_string(r"'i \\\''")
-    assert type(p.children[0].children[2]) == type(EscapedNode(""))
+    assert isinstance(p.children[0].children[2], EscapedNode)
     assert p.children[0].children[2].get_value() == r"\\"
     assert p.children[0].children[3].get_value() == r"\'"
 
@@ -36,3 +36,7 @@ def test_find_string_error(p):
 def test_string_output(p):
     p.find_string(r"'char \\ a \''")
     assert str(p.children[0]) == r"char \ a '"
+
+def test_array(p):
+    p.find_array("[true, true, false, false]")
+    assert isinstance(p.children[0], ArrayNode)

@@ -2,10 +2,11 @@ from parse_tree import *
 import value_node
 
 class ArrayNode(value_node.ValueNode):
-    def __init__(self):
+    def __init__(self, content):
         self.children = []
+        self.parse(content, first=True)
 
-    @classmethod
-    def create_and_parse(cls, content):
-        anode = cls()
-        
+    def parse(self, content, first=False):
+        if not first:
+            content = content.lstrip(", ")
+        super.parse(content)

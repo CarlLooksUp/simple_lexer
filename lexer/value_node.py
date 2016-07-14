@@ -4,20 +4,21 @@ from string_node import *
 from array_node import *
 
 class ValueNode(ParseTree):
-    def __init__(self, content):
+    def __init__(self, content=None):
         self.children = []
-        self.parse(content)
+        if content:
+            self.parse(content)
 
     def parse(self, content):
         if self.eof(content) or self.find_boolean(content) \
                                    or self.find_string(content) \
                                    or self.array(content):
-            self.print_tree()
+            return True
         else:
             raise ParseError("Malformed value", content)
 
     def find_boolean(self, content):
-        BooleanNode.match_and_recurse(self, re.compile(r"(true|false)"), content.lstrip())
+        return BooleanNode.match_and_recurse(self, re.compile(r"(true|false)"), content.lstrip())
 
     def find_string(self, content):
         if content[0] == "'":
@@ -25,7 +26,7 @@ class ValueNode(ParseTree):
             if closing_quote:
                 quote_idx = closing_quote.end(4)
                 self.add(StringNode(content[1:quote_idx]))
-                self.parse(content[quote_idx+1:])
+                return self.parse(content[quote_idx+1:])
             else:
                 return False
         else:
@@ -33,10 +34,20 @@ class ValueNode(ParseTree):
 
     def find_array(self, content):
         if content[0] == "[":
-           array, cursor = ArrayNode.create_and_parse(content[1:])
-        if array_match:
-            self.add(ArrayNode(array_match.group(1)))
+            closing_bracket_idx = self.find_array_end(content)
+            self.add(ArrayNode(content[1:closing_bracket_idx]))
+            return self.parse(content[closing_bracket_idx:])
         else:
             return False
 
     def find_array_end(self, content):
+        cursor = 1
+        open_bracket = 1
+        for idx, c in enumerate(content[cursor:]):
+            if c == '[':
+                open_bracket += 1
+            elif c == ']':
+                open_bracket -= 1
+            if open_bracket == 0:
+                cursor = cursor + idx
+                return cursor
