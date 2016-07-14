@@ -1,42 +1,38 @@
 import re
 
 class ParseTree:
-
     def __init__(self):
         self.children = []
 
     def add(self, node):
         self.children.append(node)
+        node.parent = self
 
-    def print_tree(self):
-        return ""
+    def output(self):
+        if len(self.children) == 1:
+            return self.children[0].get_value()
+        else:
+            return [x.get_value() for x in self.children] 
 
-    def eof(self, content):
-        return content.strip() == ""
 
-    def clear(self):
+class TreeNode(ParseTree):
+    def __init__(self, value=None):
+        self.value = value
         self.children = []
-
-
-class LeafNode:
-    def __init__(self, value_):
-        self.value = value_
 
     def get_value(self):
         return self.value
 
-    @classmethod
-    def match_and_recurse(cls, target, pattern, content):
-        match = pattern.match(content)
-        if match:
-            target.add(cls(match.group(1)))
-            return target.parse(content[match.end(1):])
-        else:
-            return False
-
     def __str__(self):
         return str(self.value)
 
+class BooleanNode(TreeNode):
+    def __init__(self, value):
+         self.value = (value == "true")
+
+class ArrayNode(TreeNode):
+    def get_value(self):
+        return [x.get_value() for x in self.children]
 
 class ParseError(Exception):
     def __init__(self, msg, content):
